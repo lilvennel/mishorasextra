@@ -71,8 +71,30 @@ summary{cursor:pointer;font-weight:600}
 <body>
 <main>
   <h1>Mis horas extra</h1>
-  <p class="sub">Anotá cada día que hiciste extras. Con tu sueldo fijo y los feriados del mes se calcula cuánto te corresponde cobrar. Todo queda guardado en este dispositivo, sin internet ni servidor.</p>
+  <p class="sub">Anotá cada día que hiciste extras. Con tu sueldo fijo y los feriados del mes se calcula cuánto te corresponde cobrar. Todo queda guardado en este dispositivo y, si creás una cuenta, también en la nube.</p>
   <div class="warn" id="warn" hidden>Este navegador no permite guardar datos al abrir el archivo. Usá <b>Descargar copia</b> o <b>Compartir copia</b> seguido para no perder nada.</div>
+
+  <details class="card" id="ccard">
+    <summary>Cuenta y nube</summary>
+    <p class="hint">Con una cuenta tus datos se guardan en la nube y los podés recuperar en otro teléfono. Cada cuenta ve solo sus propios datos. Sin cuenta la app funciona igual, guardando en este dispositivo.</p>
+    <div id="cOut">
+      <div class="f3">
+        <div><label for="cm">Email</label><input id="cm" type="email" autocomplete="username"></div>
+        <div><label for="cp">Contraseña</label><input id="cp" type="password" autocomplete="current-password"></div>
+      </div>
+      <p style="margin:10px 0 0;display:flex;gap:8px;flex-wrap:wrap"><button class="p" id="cIn" type="button">Iniciar sesión</button><button id="cNew" type="button">Crear cuenta</button></p>
+      <p class="hint">Al crear la cuenta, la contraseña debe tener al menos 6 caracteres.</p>
+    </div>
+    <div id="cOn" hidden>
+      <p class="hint" id="cWho"></p>
+      <div class="tools" style="margin-top:8px">
+        <button id="cUp" type="button">Subir ahora</button>
+        <button id="cDown" type="button">Bajar de la nube</button>
+        <button id="cLogout" type="button" class="x">Cerrar sesión</button>
+      </div>
+    </div>
+    <p class="msg" id="cmsg" role="status"></p>
+  </details>
 
   <section class="card nav" aria-label="Elegir mes">
     <button id="mPrev" type="button" aria-label="Mes anterior">‹</button>
@@ -156,26 +178,6 @@ summary{cursor:pointer;font-weight:600}
     <p style="margin:10px 0 0"><button id="bHor" type="button">Guardar horario</button></p>
   </details>
 
-  <details class="card" id="ccard">
-    <summary>Nube (Supabase)</summary>
-    <p class="hint">Guarda una copia de tus datos en tu cuenta de Supabase, así no dependen del navegador. Solo hace falta internet para sincronizar; el resto de la app anda sin conexión.</p>
-    <div id="cOut">
-      <div class="f3">
-        <div><label for="cm">Email</label><input id="cm" type="email" autocomplete="username"></div>
-        <div><label for="cp">Contraseña</label><input id="cp" type="password" autocomplete="current-password"></div>
-      </div>
-      <p style="margin:10px 0 0"><button class="p" id="cIn" type="button">Iniciar sesión</button></p>
-    </div>
-    <div id="cOn" hidden>
-      <p class="hint" id="cWho"></p>
-      <div class="tools" style="margin-top:8px">
-        <button id="cUp" type="button">Subir ahora</button>
-        <button id="cDown" type="button">Bajar de la nube</button>
-        <button id="cLogout" type="button" class="x">Cerrar sesión</button>
-      </div>
-    </div>
-    <p class="msg" id="cmsg" role="status"></p>
-  </details>
 
   <section class="card">
     <div class="lbl">Copias de seguridad</div>
@@ -572,13 +574,44 @@ summary{cursor:pointer;font-weight:600}
       push();
     });
   }
+  var OWN = 'horas-extras-owner-v1';
+  // entra con la sesión; si este teléfono tiene datos de OTRA cuenta, pregunta antes de mezclarlos
+  function enter(j) {
+    var uid = j.user && j.user.id, own = null;
+    try { own = localStorage.getItem(OWN); } catch (e) {}
+    var has = items.length || rec.length || Object.keys(cfg.sal).length || cfg.hol.length;
+    if (own && uid && own !== uid && has) {
+      if (!confirm('Este teléfono tiene datos de otra cuenta. Para entrar con esta cuenta se borran de acá (siguen guardados en la nube de la otra cuenta). ¿Continuar?')) { cmsg('Entrada cancelada.'); return Promise.resolve(); }
+      items = []; rec = []; cfg.sal = {}; cfg.hol = []; cfg.dirty = 0; write();
+    }
+    try { if (uid) localStorage.setItem(OWN, uid); } catch (e) {}
+    $('cp').value = ''; setSess(j); showCloud(); cmsg('Sesión iniciada. Sincronizando…', true); return reconcile();
+  }
+  function authErr(e, nuevo) {
+    var m = e.message || '';
+    if (/already|registered/i.test(m)) return 'Ese email ya tiene cuenta. Tocá "Iniciar sesión".';
+    if (/rate|limit|seconds/i.test(m)) return 'Demasiados intentos. Esperá un rato y probá de nuevo.';
+    if (/password/i.test(m) && nuevo) return 'La contraseña es muy corta o débil (mínimo 6 caracteres).';
+    if (/disabled|not allowed/i.test(m)) return 'Los registros están desactivados.';
+    if (/invalid|credentials/i.test(m)) return 'Email o contraseña incorrectos.';
+    if (/confirm/i.test(m)) return 'Falta confirmar el email. Revisá tu correo.';
+    return (nuevo ? 'No se pudo crear la cuenta: ' : 'No se pudo entrar: ') + m;
+  }
   $('cIn').onclick = function () {
     var m = $('cm').value.trim(), p = $('cp').value;
     if (!m || !p) return cmsg('Escribí el email y la contraseña.');
     cmsg('Entrando…');
-    sbPost('/auth/v1/token?grant_type=password', { email: m, password: p }).then(function (j) {
-      $('cp').value = ''; setSess(j); showCloud(); cmsg('Sesión iniciada. Sincronizando…', true); return reconcile();
-    }).catch(function (e) { cmsg(/invalid|credentials/i.test(e.message) ? 'Email o contraseña incorrectos.' : 'No se pudo entrar: ' + e.message); });
+    sbPost('/auth/v1/token?grant_type=password', { email: m, password: p }).then(enter).catch(function (e) { cmsg(authErr(e, false)); });
+  };
+  $('cNew').onclick = function () {
+    var m = $('cm').value.trim(), p = $('cp').value;
+    if (!m || !p) return cmsg('Escribí el email y la contraseña que querés usar.');
+    if (p.length < 6) return cmsg('La contraseña debe tener al menos 6 caracteres.');
+    cmsg('Creando la cuenta…');
+    sbPost('/auth/v1/signup', { email: m, password: p }).then(function (j) {
+      if (j && j.access_token) return enter(j);
+      cmsg('Cuenta creada. Te mandamos un email para confirmarla: abrilo, confirmá y después tocá "Iniciar sesión".', true);
+    }).catch(function (e) { cmsg(authErr(e, true)); });
   };
   $('cUp').onclick = function () { push(); };
   $('cDown').onclick = function () {
@@ -591,7 +624,7 @@ summary{cursor:pointer;font-weight:600}
   window.addEventListener('online', function () { if (!sess) return; if (!synced) reconcile().catch(function () {}); else if (cfg.dirty) push(); });
   function startCloud() {
     try { var s = JSON.parse(localStorage.getItem(SK) || 'null'); if (s && s.rt) sess = s; } catch (e) {}
-    showCloud();
+    showCloud(); $('ccard').open = !sess;
     if (sess) reconcile().catch(function (e) { cmsg('Sin conexión con la nube: ' + e.message); });
   }
 
