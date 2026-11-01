@@ -52,7 +52,11 @@ h1{font-size:1.5rem;font-weight:800;letter-spacing:-.02em;line-height:1.1}
 h2.ttl,summary{display:flex;align-items:center;gap:11px;font-size:1.02rem;font-weight:700;letter-spacing:-.01em}
 summary{cursor:pointer;list-style:none;min-height:34px}
 summary::-webkit-details-marker{display:none}
-summary::after{content:"›";margin-left:auto;font-size:1.5rem;line-height:1;color:var(--mu);transition:transform .2s}
+summary::after{content:"›";margin-left:6px;font-size:1.5rem;line-height:1;color:var(--mu);transition:transform .2s}
+.sb{margin-left:auto;font-size:.8rem;font-weight:600;color:var(--mu);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:none}
+details[open]>summary .sb{opacity:0}
+.fold{display:flex;justify-content:flex-end;margin:-6px 0 6px}
+button.link{min-height:34px;padding:4px 10px;background:none;border:0;color:var(--mu);font-size:.82rem;text-decoration:underline;text-underline-offset:3px}
 details[open]>summary::after{transform:rotate(90deg)}
 details[open]>summary{margin-bottom:10px}
 .ico{flex:none;width:36px;height:36px;border-radius:12px;display:grid;place-items:center;font-size:1.05rem;background:var(--soft);background:color-mix(in srgb,var(--c1) 14%,var(--soft))}
@@ -208,8 +212,10 @@ button.more:hover{color:var(--tx)}
 
   <div class="chips" id="months" aria-label="Meses"></div>
 
-  <section class="card">
-    <h2 class="ttl"><span class="ico">⏱️</span>Cargar horas</h2>
+  <div class="fold"><button type="button" class="link" id="foldAll">Contraer todo</button></div>
+
+  <details class="card" id="hcard" open>
+    <summary><span class="ico">⏱️</span>Cargar horas<span class="sb" id="sbH"></span></summary>
     <form class="f" id="form" autocomplete="off">
       <div><label for="d">Día</label><input id="d" type="date" required></div>
       <div><label for="h">Horas</label><input id="h" inputmode="text" placeholder="2:30 o 2,5" required></div>
@@ -221,27 +227,9 @@ button.more:hover{color:var(--tx)}
     <p class="msg" id="msg" role="status"></p>
     <button id="bList" class="more" type="button" aria-expanded="false"></button>
     <div id="list" hidden></div>
-  </section>
-
-  <section class="card" id="bcard">
-    <h2 class="ttl"><span class="ico">🏦</span>Horas a favor</h2>
-    <p class="hint" style="margin-top:6px">Dejá horas de un mes a favor para el mes siguiente, por ejemplo para pedir un día libre. Si hiciste 16 h en octubre y dejás 4 h a favor, en octubre cobrás 12 h y en noviembre arrancás con 4 h a favor. Si no las usás, las podés cobrar.</p>
-    <div class="stats" id="bstats"></div>
-    <p class="bwarn" id="bwarn" hidden></p>
-    <form class="f b" id="bform" autocomplete="off">
-      <div><label for="bd">Día</label><input id="bd" type="date" required></div>
-      <div><label for="bh">Horas</label><input id="bh" inputmode="text" placeholder="4:00" required></div>
-      <div class="w"><label for="bk">Qué hago</label><select id="bk"><option value="guardar">Dejar a favor</option><option value="usar">Usar (día libre)</option><option value="cobrar">Cobrar horas a favor</option></select></div>
-      <div class="n"><label for="bn">Razón (la podés editar después)</label><input id="bn" maxlength="200" placeholder="Ej.: para pedir el viernes 14"></div>
-      <button class="p" type="submit">Agregar</button>
-    </form>
-    <p class="msg" id="bmsg" role="status"></p>
-    <button id="bbList" class="more" type="button" aria-expanded="false"></button>
-    <div id="blist" hidden></div>
-  </section>
-
-  <section class="card" id="mcard">
-    <h2 class="ttl"><span class="ico">💵</span><span id="mTitle"></span></h2>
+  </details>
+  <details class="card" id="mcard" open>
+    <summary><span class="ico">💵</span><span id="mTitle"></span><span class="sb" id="sbM"></span></summary>
     <div class="f2">
       <div><label for="sal">Sueldo fijo mensual bruto ($)</label><input id="sal" inputmode="decimal" placeholder="Ej.: 1.250.000"></div>
       <button class="p" id="bSal" type="button">Guardar sueldo</button>
@@ -257,10 +245,9 @@ button.more:hover{color:var(--tx)}
       <div><label for="hd">Agregar feriado</label><input id="hd" type="date"></div>
       <button id="bHol" type="button">Agregar</button>
     </div>
-  </section>
-
-  <section class="card" id="dcard">
-    <h2 class="ttl"><span class="ico">🧾</span>Descuentos</h2>
+  </details>
+  <details class="card" id="dcard" open>
+    <summary><span class="ico">🧾</span>Descuentos<span class="sb" id="sbD"></span></summary>
     <p class="hint" style="margin-top:6px">Cargá lo que te descuentan del recibo (jubilación, obra social, sindicato…) para ver cuánto te queda limpio. Se aplican como porcentaje sobre lo que cobrás.</p>
     <div id="dlist"></div>
     <form class="f2 d" id="dform" autocomplete="off">
@@ -270,10 +257,26 @@ button.more:hover{color:var(--tx)}
     </form>
     <p class="hint" id="dtot"></p>
     <p class="msg" id="dmsg" role="status"></p>
-  </section>
+  </details>
+  <details class="card" id="bcard" open>
+    <summary><span class="ico">🏦</span>Horas a favor<span class="sb" id="sbB"></span></summary>
+    <p class="hint" style="margin-top:6px">Dejá horas de un mes a favor para el mes siguiente, por ejemplo para pedir un día libre. Si hiciste 16 h en octubre y dejás 4 h a favor, en octubre cobrás 12 h y en noviembre arrancás con 4 h a favor. Si no las usás, las podés cobrar.</p>
+    <div class="stats" id="bstats"></div>
+    <p class="bwarn" id="bwarn" hidden></p>
+    <form class="f b" id="bform" autocomplete="off">
+      <div><label for="bd">Día</label><input id="bd" type="date" required></div>
+      <div><label for="bh">Horas</label><input id="bh" inputmode="text" placeholder="4:00" required></div>
+      <div class="w"><label for="bk">Qué hago</label><select id="bk"><option value="guardar">Dejar a favor</option><option value="usar">Usar (día libre)</option><option value="cobrar">Cobrar horas a favor</option></select></div>
+      <div class="n"><label for="bn">Razón (la podés editar después)</label><input id="bn" maxlength="200" placeholder="Ej.: para pedir el viernes 14"></div>
+      <button class="p" type="submit">Agregar</button>
+    </form>
+    <p class="msg" id="bmsg" role="status"></p>
+    <button id="bbList" class="more" type="button" aria-expanded="false"></button>
+    <div id="blist" hidden></div>
+  </details>
 
   <details class="card" id="kcard">
-    <summary><span class="ico">🎨</span>Colores y tema</summary>
+    <summary><span class="ico">🎨</span>Colores y tema<span class="sb"></span></summary>
     <p class="hint">Elegí dos colores y la app los mezcla en degradé. Se guardan en tu cuenta.</p>
     <div class="f3">
       <div><label for="k1">Color 1</label><input id="k1" type="color"></div>
@@ -287,8 +290,8 @@ button.more:hover{color:var(--tx)}
     </div>
   </details>
 
-  <details class="card">
-    <summary><span class="ico">🗓️</span>Mi horario</summary>
+  <details class="card" id="ocard">
+    <summary><span class="ico">🗓️</span>Mi horario<span class="sb" id="sbO"></span></summary>
     <div class="f3">
       <div><label for="wd">Horas por día, de lunes a viernes</label><input id="wd" inputmode="decimal"></div>
       <div><label for="st">Horas el sábado</label><input id="st" inputmode="decimal"></div>
@@ -298,8 +301,8 @@ button.more:hover{color:var(--tx)}
     <p class="msg" id="hmsg" role="status"></p>
   </details>
 
-  <details class="card">
-    <summary><span class="ico">💾</span>Copias de seguridad</summary>
+  <details class="card" id="zcard">
+    <summary><span class="ico">💾</span>Copias<span class="sb" id="sbZ"></span></summary>
     <div class="tools" style="margin-top:6px">
       <button id="bShare" type="button" hidden>Compartir copia</button>
       <button id="bJson" type="button">Descargar copia</button>
@@ -511,6 +514,7 @@ button.more:hover{color:var(--tx)}
   }
   function backupNote() {
     var b = $('bkn'), n = cfg.dirty || 0;
+    $('sbZ').textContent = sess ? 'en la nube' : (n > 0 ? n + ' sin copia' : (cfg.last ? 'al día' : ''));
     if (sess) { b.className = 'bk'; b.textContent = 'Tus datos se guardan solos en tu cuenta.'; return; }
     if (n > 0) { b.className = 'bk late'; b.textContent = n + ' cambio(s) sin copia de seguridad' + (cfg.last ? ' (última copia: ' + fdate(cfg.last) + ')' : '') + '. Descargá o compartí una copia, o entrá con tu cuenta.'; }
     else { b.className = 'bk'; b.textContent = cfg.last ? 'Todo respaldado. Última copia: ' + fdate(cfg.last) + '.' : ''; }
@@ -522,7 +526,7 @@ button.more:hover{color:var(--tx)}
     applyTheme();
     var ms = monthsSet(), sel = $('per'); sel.innerHTML = '';
     var all = mk('option', '', 'Todos los meses'); all.value = 'todos'; sel.appendChild(all);
-    ms.forEach(function (m) { var o = mk('option', '', monthName(m) + (m === cur ? ' (actual)' : '')); o.value = m; sel.appendChild(o); });
+    ms.forEach(function (m) { var o = mk('option', '', monthName(m)); o.value = m; sel.appendChild(o); });
     sel.value = selected;
     $('past').hidden = selected === cur;
     $('pastTxt').textContent = selected === 'todos' ? 'Viendo todos los meses' : 'Viendo ' + monthName(selected);
@@ -538,7 +542,8 @@ button.more:hover{color:var(--tx)}
 
   function renderHero(v) {
     $('hMes').textContent = selected === 'todos' ? 'Todos los meses' : monthName(selected);
-    $('hTot').textContent = txt(v.tot);
+    $('hTot').textContent = txt(v.tot); $('sbH').textContent = v.tot ? txt(v.tot) : '';
+    $('sbO').textContent = 'L–V ' + cfg.wd + ' h · Sáb ' + cfg.sat + ' h';
     var pl = $('hPills'); pl.innerHTML = '';
     [['Común', v.w['1']], ['50%', v.w['50']], ['100%', v.w['100']]].forEach(function (a) { if (a[1]) pl.appendChild(mk('span', '', a[0] + ' · ' + txt(a[1]))); });
     if (!pl.children.length) pl.appendChild(mk('span', '', 'Sin horas cargadas'));
@@ -583,6 +588,7 @@ button.more:hover{color:var(--tx)}
     fillStats($('bstats'), v.all
       ? [['Total dejado a favor', txt(v.saved)], ['Total usado', txt(v.used)], ['Total cobrado', txt(v.cashed)], ['Saldo a favor ahora', txt(v.close)]]
       : [['A favor desde antes', txt(v.open)], ['Dejadas este mes', txt(v.saved)], ['Usadas o cobradas', txt(v.used + v.cashed)], ['Saldo al cierre', txt(v.close)]]);
+    $('sbB').textContent = v.close ? 'saldo ' + txt(v.close) : 'sin saldo';
     $('bwarn').hidden = !v.warn.length; $('bwarn').textContent = v.warn.join(' ');
     fillList($('blist'), shown, function (x) { return mkRow(x, true); }, 'Todavía no hay movimientos en este período.', function (k) {
       var b = 0; shown.forEach(function (x) { if (x.date.slice(0, 7) === k) b += x.k === 'guardar' ? x.min : -x.min; }); return (b >= 0 ? '+' : '') + hm(b) + ' h';
@@ -594,7 +600,8 @@ button.more:hover{color:var(--tx)}
   function renderMonthCard() {
     var card = $('mcard'); card.hidden = selected === 'todos'; if (selected === 'todos') return;
     var ym = selected, c = calc(ym), s = c.sal;
-    $('mTitle').textContent = 'Sueldo de ' + monthName(ym);
+    $('mTitle').textContent = 'Sueldo';
+    $('sbM').textContent = s ? s.val.toLocaleString('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }) : 'sin cargar';
     if (document.activeElement !== $('sal')) $('sal').value = s ? s.val.toLocaleString('es-AR', { maximumFractionDigits: 2 }) : '';
     $('salHint').textContent = !s ? 'Todavía no cargaste el sueldo. Se usa desde este mes en adelante hasta que lo cambies. Cargá el sueldo bruto, antes de descuentos.'
       : s.own ? 'Sueldo cargado para este mes. Se usa en los meses siguientes hasta que lo cambies.'
@@ -631,6 +638,7 @@ button.more:hover{color:var(--tx)}
       b.onclick = function () { cfg.desc = cfg.desc.filter(function (x) { return x.id !== d.id; }); save(); render(); };
       r.appendChild(ni); r.appendChild(pi); r.appendChild(b); box.appendChild(r);
     });
+    $('sbD').textContent = cfg.desc.length ? fmtPct(descPct()) + '%' : 'sin cargar';
     $('dtot').textContent = cfg.desc.length ? 'Total de descuentos: ' + fmtPct(descPct()) + '%' : 'Todavía no cargaste descuentos. Ejemplos: jubilación, obra social, sindicato.';
   }
 
@@ -912,7 +920,29 @@ button.more:hover{color:var(--tx)}
     if (sess) reconcile().catch(function (e) { cst = '⚠'; chip(); cmsg('Sin conexión con la nube: ' + e.message); });
   }
 
-  load(); $('wd').value = cfg.wd; $('st').value = cfg.sat; render(); startCloud();
+  // ---------- secciones plegables (se recuerda cuáles dejaste abiertas) ----------
+  var UI = 'horas-extras-ui-v1';
+  function secciones() { return Array.prototype.slice.call(document.querySelectorAll('details.card[id]')); }
+  function etiquetaPlegar() { $('foldAll').textContent = secciones().some(function (d) { return d.open && !d.hidden; }) ? 'Contraer todo' : 'Expandir todo'; }
+  function iniciarSecciones() {
+    var st = jget(UI, {});
+    secciones().forEach(function (d) {
+      if (d.id in st) d.open = !!st[d.id];
+      d.addEventListener('toggle', function () {
+        var s = jget(UI, {}); s[d.id] = d.open;
+        try { localStorage.setItem(UI, JSON.stringify(s)); } catch (e) {}
+        etiquetaPlegar();
+      });
+    });
+    $('foldAll').onclick = function () {
+      var hay = secciones().some(function (d) { return d.open && !d.hidden; });
+      secciones().forEach(function (d) { d.open = !hay; });
+      etiquetaPlegar();
+    };
+    etiquetaPlegar();
+  }
+
+  load(); $('wd').value = cfg.wd; $('st').value = cfg.sat; render(); iniciarSecciones(); startCloud();
 })();
 
 </script>
