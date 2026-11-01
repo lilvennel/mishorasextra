@@ -142,14 +142,48 @@ button.more:hover{color:var(--tx)}
 .stats div{background:var(--soft);border-radius:16px;padding:10px 12px}
 .stats .lbl{font-size:.64rem}
 .stats b{display:block;font-size:1rem;font-variant-numeric:tabular-nums;margin-top:2px}
-.hol{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 12px;margin-top:8px;background:var(--soft);border-radius:14px;font-size:.9rem}
-.hol small{color:var(--mu)}
 .bk{font-size:.8rem;color:var(--mu);margin:12px 0 0}
 .bk.late{color:var(--dg);font-weight:600}
 .swatch{height:52px;border-radius:16px;background:var(--g);margin-top:14px;box-shadow:0 14px 28px -16px var(--c2)}
 .presets{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
 .presets button{width:44px;height:44px;min-height:0;padding:0;border-radius:50%;border:3px solid var(--card);box-shadow:0 0 0 1px var(--bd),0 6px 14px -6px rgba(0,0,0,.4)}
 .presets button:hover{transform:scale(1.1)}
+
+
+/* ---------- feriados con interruptor ---------- */
+.f2.h{grid-template-columns:1fr 1fr auto}
+@media(max-width:700px){.f2.h{grid-template-columns:1fr 1fr}.f2.h button{grid-column:1/-1}}
+button.small{min-height:40px;padding:6px 14px;font-size:.84rem}
+.hol{display:flex;align-items:center;gap:12px;padding:8px 12px;margin-top:8px;background:var(--soft);border-radius:14px}
+.hol .tx{flex:1;min-width:0;font-size:.92rem}
+.hol small{display:block;color:var(--mu);font-size:.74rem;line-height:1.35}
+.hol.off .tx b{color:var(--mu);font-weight:600;text-decoration:line-through;text-decoration-thickness:1px}
+.sw{position:relative;flex:none;display:block;width:46px;height:28px;margin:0}
+.sw input{position:absolute;inset:0;z-index:1;width:100%;height:100%;min-height:0;padding:0;margin:0;border:0;opacity:0;cursor:pointer}
+.sw i{position:absolute;inset:0;border-radius:99px;background:var(--bd);transition:background .2s}
+.sw i::after{content:"";position:absolute;left:3px;top:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.35);transition:transform .2s}
+.sw input:checked+i{background:var(--g)}
+.sw input:checked+i::after{transform:translateX(18px)}
+.sw input:focus-visible+i{outline:2px solid var(--tx);outline-offset:2px}
+
+/* ---------- resumen anual ---------- */
+.ybar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:6px}
+#yPrev,#yNext{width:42px;min-height:42px;padding:0;font-size:1.4rem;line-height:1;background:var(--soft);border-color:transparent}
+#yTit{min-width:58px;text-align:center;font-size:1.15rem;font-variant-numeric:tabular-nums}
+.seg{display:inline-flex;margin-left:auto;background:var(--soft);border-radius:14px;padding:3px;gap:2px}
+.seg button{min-height:38px;padding:4px 13px;border:0;background:none;border-radius:11px;font-size:.84rem;color:var(--mu);box-shadow:none}
+.seg button.on{background:var(--g);color:var(--on);text-shadow:var(--sh)}
+.ychart{display:grid;grid-template-columns:repeat(12,1fr);gap:3px;height:220px;margin-top:16px}
+.yc{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;min-width:0;min-height:0;padding:4px 0 2px;border:0;background:none;border-radius:12px}
+.yc:hover,.yc.sel{background:var(--soft)}
+.yc .v{height:15px;font-size:.62rem;font-weight:700;white-space:nowrap;color:var(--tx);font-variant-numeric:tabular-nums}
+.yc .t{flex:1;width:100%;min-height:0;display:flex;align-items:flex-end;justify-content:center}
+.yc .br{display:block;width:100%;max-width:24px;min-height:3px;border-radius:8px 8px 4px 4px;background:var(--g)}
+.yc.zero .br{background:var(--bd)}
+.yc.best .br{box-shadow:0 0 0 2px var(--card),0 0 0 4px var(--c1)}
+.yc .m{height:16px;font-size:.62rem;font-weight:600;text-transform:uppercase;color:var(--mu)}
+.yc.cur .m{color:var(--tx);font-weight:800}
+.ydet{margin:10px 2px 0;font-size:.84rem;color:var(--mu);min-height:1.3em}
 
 @media(prefers-reduced-motion:reduce){*{animation:none !important;transition:none !important}}
 </style>
@@ -239,12 +273,16 @@ button.more:hover{color:var(--tx)}
     <p class="hint">Valor de la hora = sueldo ÷ horas laborables del mes. El 50% se paga 1,5 veces la hora y el 100% el doble.</p>
 
     <div class="lbl" style="margin-top:20px">Feriados del mes</div>
-    <p class="hint" style="margin-top:2px">Se cobran igual, pero no cuentan como horas laborables del mes.</p>
+    <p class="hint" style="margin-top:2px">Se traen solos los feriados de Argentina de cada año. Se cobran igual, pero no cuentan como horas laborables. Activá o desactivá cada uno según si en tu trabajo se cuenta o no.</p>
     <div id="hols"></div>
-    <div class="f2">
-      <div><label for="hd">Agregar feriado</label><input id="hd" type="date"></div>
+    <p class="hint" id="ferEst"></p>
+    <div class="f2 h">
+      <div><label for="hd">Agregar otro día</label><input id="hd" type="date"></div>
+      <div><label for="hn">Nombre (opcional)</label><input id="hn" maxlength="60" placeholder="Ej.: día del gremio"></div>
       <button id="bHol" type="button">Agregar</button>
     </div>
+    <p style="margin:10px 0 0"><button id="bFer" type="button" class="small">↻ Traer feriados de <span id="ferY"></span></button></p>
+    <p class="msg" id="fermsg" role="status"></p>
   </details>
   <details class="card" id="dcard" open>
     <summary><span class="ico">🧾</span>Descuentos<span class="sb" id="sbD"></span></summary>
@@ -273,6 +311,22 @@ button.more:hover{color:var(--tx)}
     <p class="msg" id="bmsg" role="status"></p>
     <button id="bbList" class="more" type="button" aria-expanded="false"></button>
     <div id="blist" hidden></div>
+  </details>
+
+  <details class="card" id="ycard" open>
+    <summary><span class="ico">📊</span>Resumen del año<span class="sb" id="sbY"></span></summary>
+    <div class="ybar">
+      <button type="button" id="yPrev" aria-label="Año anterior">‹</button>
+      <b id="yTit"></b>
+      <button type="button" id="yNext" aria-label="Año siguiente">›</button>
+      <div class="seg" id="yMet" role="group" aria-label="Qué mostrar">
+        <button type="button" data-v="h" class="on">Horas</button><button type="button" data-v="b">Bruto</button><button type="button" data-v="n">Limpio</button>
+      </div>
+    </div>
+    <div class="ychart" id="yChart" role="group" aria-label="Gráfico por mes"></div>
+    <p class="ydet" id="yDet"></p>
+    <div class="stats" id="yStats"></div>
+    <p class="hint" id="yHint"></p>
   </details>
 
   <details class="card" id="kcard">
@@ -327,7 +381,7 @@ button.more:hover{color:var(--tx)}
   var cfg = newCfg();
   var $ = function (id) { return document.getElementById(id); };
   var ARS = function (n) { return n.toLocaleString('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 2 }); };
-  function newCfg() { return { sal: {}, hol: [], wd: 8, sat: 4, desc: [], c1: D1, c2: D2, mode: 'auto', last: null, dirty: 0 }; }
+  function newCfg() { return { sal: {}, hol: [], holn: {}, holY: [], wd: 8, sat: 4, desc: [], c1: D1, c2: D2, mode: 'auto', last: null, dirty: 0 }; }
 
   // ---------- almacenamiento local ----------
   try { localStorage.setItem('_t', '1'); localStorage.removeItem('_t'); } catch (e) { ok = false; $('warn').hidden = false; }
@@ -350,6 +404,8 @@ button.more:hover{color:var(--tx)}
     if (!c || typeof c !== 'object') return o;
     if (c.sal && typeof c.sal === 'object') Object.keys(c.sal).forEach(function (k) { var v = +c.sal[k]; if (/^\d{4}-\d{2}$/.test(k) && isFinite(v) && v > 0) o.sal[k] = v; });
     if (Array.isArray(c.hol)) o.hol = c.hol.filter(function (d) { return RE_DATE.test(d); }).filter(function (d, i, a) { return a.indexOf(d) === i; }).sort();
+    if (c.holn && typeof c.holn === 'object') Object.keys(c.holn).forEach(function (k) { if (RE_DATE.test(k) && typeof c.holn[k] === 'string' && c.holn[k]) o.holn[k] = c.holn[k].slice(0, 60); });
+    if (Array.isArray(c.holY)) o.holY = c.holY.map(Number).filter(function (y, i, a) { return Number.isInteger(y) && y >= 2000 && y <= 2100 && a.indexOf(y) === i; }).sort();
     if (isFinite(+c.wd) && +c.wd >= 0 && +c.wd <= 24) o.wd = +c.wd;
     if (isFinite(+c.sat) && +c.sat >= 0 && +c.sat <= 24) o.sat = +c.sat;
     if (Array.isArray(c.desc)) o.desc = uniq(c.desc.filter(function (d) { return d && isFinite(+d.pct) && +d.pct >= 0 && +d.pct <= 100; })
@@ -537,7 +593,10 @@ button.more:hover{color:var(--tx)}
       $('d').value = dd; $('bd').value = dd;
     }
     var v = view();
-    renderHero(v); renderChips(); renderItems(); renderBank(v); renderMonthCard(); renderDesc(); backupNote();
+    var sy = selected === 'todos' ? null : +selected.slice(0, 4);
+    if (sy !== null && sy !== lastSY) { lastSY = sy; anio = sy; }
+    renderHero(v); renderChips(); renderItems(); renderBank(v); renderMonthCard(); renderDesc(); renderYear(); backupNote();
+    asegurarAnios();
   }
 
   function renderHero(v) {
@@ -613,16 +672,33 @@ button.more:hover{color:var(--tx)}
       ['Sueldo + extras limpio', clean2 !== null ? ARS(clean2) : '—']
     ]);
     var hs = $('hols'); hs.innerHTML = '';
-    var mh = cfg.hol.filter(function (d) { return d.slice(0, 7) === ym; });
-    if (!mh.length) hs.appendChild(mk('p', 'hint', 'Sin feriados cargados en este mes.'));
-    mh.forEach(function (d) {
-      var r = mk('div', 'hol'), w = new Date(d + 'T12:00:00').getDay();
-      var t = mk('span', '', fdate(d) + ' · ' + dow(d) + ' ');
-      t.appendChild(mk('small', '', w === 0 ? '(domingo, no cambia nada)' : w === 6 ? '(descuenta ' + cfg.sat + ' h)' : '(descuenta ' + cfg.wd + ' h)'));
-      var b = mk('button', 'x', 'Quitar'); b.type = 'button'; b.setAttribute('aria-label', 'Quitar el feriado del ' + fdate(d));
-      b.onclick = function () { cfg.hol = cfg.hol.filter(function (h) { return h !== d; }); save(); render(); };
-      r.appendChild(t); r.appendChild(b); hs.appendChild(r);
+    var yy = +ym.slice(0, 4), mapa = {};
+    (FER[yy] || []).forEach(function (x) { if (x.f.slice(0, 7) === ym) mapa[x.f] = { f: x.f, n: x.n, t: x.t, cat: true }; });
+    cfg.hol.forEach(function (d) { if (d.slice(0, 7) === ym && !mapa[d]) mapa[d] = { f: d, n: cfg.holn[d] || 'Día no laborable', t: 'c', cat: false }; });
+    var lista = Object.keys(mapa).sort().map(function (k) { return mapa[k]; });
+    if (!lista.length) hs.appendChild(mk('p', 'hint', ferBusy[yy] ? 'Trayendo feriados…' : 'No hay feriados cargados en este mes.'));
+    lista.forEach(function (x) {
+      var on = cfg.hol.indexOf(x.f) >= 0, w = new Date(x.f + 'T12:00:00').getDay();
+      var r = mk('div', 'hol' + (on ? '' : ' off')), sw = mk('label', 'sw'), cb = mk('input');
+      cb.type = 'checkbox'; cb.checked = on; cb.setAttribute('aria-label', 'Cuenta como feriado: ' + x.n);
+      sw.appendChild(cb); sw.appendChild(mk('i'));
+      var tx = mk('div', 'tx'); tx.appendChild(mk('b', '', x.n));
+      var peso = w === 0 ? 'domingo, no cambia nada' : on ? 'descuenta ' + (w === 6 ? cfg.sat : cfg.wd) + ' h' : 'no se descuenta';
+      tx.appendChild(mk('small', '', x.f.slice(8) + '/' + x.f.slice(5, 7) + ' · ' + dow(x.f) + ' · ' + peso + (x.t === 'o' ? ' · opcional (puente o no laborable)' : '')));
+      cb.onchange = function () {
+        if (cb.checked) { if (cfg.hol.indexOf(x.f) < 0) cfg.hol.push(x.f); if (!cfg.holn[x.f]) cfg.holn[x.f] = x.n; cfg.hol.sort(); }
+        else cfg.hol = cfg.hol.filter(function (d) { return d !== x.f; });
+        save(); render();
+      };
+      r.appendChild(sw); r.appendChild(tx);
+      if (!x.cat) {
+        var q = mk('button', 'x', 'Quitar'); q.type = 'button'; q.setAttribute('aria-label', 'Quitar ' + x.n);
+        q.onclick = function () { cfg.hol = cfg.hol.filter(function (d) { return d !== x.f; }); delete cfg.holn[x.f]; save(); render(); };
+        r.appendChild(q);
+      }
+      hs.appendChild(r);
     });
+    ferEstado();
     $('hd').min = ym + '-01'; $('hd').max = ym + '-' + p2(dim(ym));
   }
 
@@ -712,10 +788,12 @@ button.more:hover{color:var(--tx)}
   };
   $('bHol').onclick = function () {
     var d = $('hd').value;
-    if (!d || d.slice(0, 7) !== selected) return;
-    if (cfg.hol.indexOf(d) < 0) { cfg.hol.push(d); cfg.hol.sort(); save(); }
-    $('hd').value = ''; render();
+    if (!d || d.slice(0, 7) !== selected) { say('Elegí una fecha de este mes.', false, 'fermsg'); return; }
+    if (cfg.hol.indexOf(d) < 0) { cfg.hol.push(d); cfg.hol.sort(); }
+    var n = $('hn').value.trim().slice(0, 60); if (n) cfg.holn[d] = n;
+    save(); $('hd').value = ''; $('hn').value = ''; say('', true, 'fermsg'); render();
   };
+  $('bFer').onclick = function () { cargarAnio(selected === 'todos' ? new Date().getFullYear() : +selected.slice(0, 4), true); };
   $('bHor').onclick = function () {
     var a = num($('wd').value), b = num($('st').value);
     if (a === null || b === null) return say('Horario no válido: usá números entre 0 y 24.', false, 'hmsg');
@@ -737,7 +815,7 @@ button.more:hover{color:var(--tx)}
 
   // ---------- copias ----------
   function backupBody() { return JSON.stringify({ v: 4, items: items, bank: bank, cfg: cfgOut() }, null, 2); }
-  function cfgOut() { return { sal: cfg.sal, hol: cfg.hol, wd: cfg.wd, sat: cfg.sat, desc: cfg.desc, c1: cfg.c1, c2: cfg.c2, mode: cfg.mode }; }
+  function cfgOut() { return { sal: cfg.sal, hol: cfg.hol, holn: cfg.holn, holY: cfg.holY, wd: cfg.wd, sat: cfg.sat, desc: cfg.desc, c1: cfg.c1, c2: cfg.c2, mode: cfg.mode }; }
   function markBackup() { cfg.last = today(); cfg.dirty = 0; write(); backupNote(); }
   function download(name, mime, body) { var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([body], { type: mime })); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(a.href); }, 3000); }
   $('bJson').onclick = function () { download('mis-horitas-' + today() + '.json', 'application/json', backupBody()); markBackup(); say('Copia descargada.', true, 'fmsg'); };
@@ -790,6 +868,8 @@ button.more:hover{color:var(--tx)}
       var c = cleanCfg(raw.cfg);
       Object.keys(c.sal).forEach(function (k) { if (!(k in cfg.sal)) cfg.sal[k] = c.sal[k]; });
       c.hol.forEach(function (d) { if (cfg.hol.indexOf(d) < 0) cfg.hol.push(d); }); cfg.hol.sort();
+      Object.keys(c.holn).forEach(function (k) { if (!(k in cfg.holn)) cfg.holn[k] = c.holn[k]; });
+      c.holY.forEach(function (y) { if (cfg.holY.indexOf(y) < 0) cfg.holY.push(y); }); cfg.holY.sort();
       c.desc.forEach(function (d) { var dup = cfg.desc.some(function (x) { return x.id === d.id || (x.name === d.name && x.pct === d.pct); }); if (!dup) cfg.desc.push(d); });
       if (cfg.c1 === D1 && cfg.c2 === D2 && cfg.mode === 'auto') { cfg.c1 = c.c1; cfg.c2 = c.c2; cfg.mode = c.mode; }
       if (cfg.wd === 8 && cfg.sat === 4) { cfg.wd = c.wd; cfg.sat = c.sat; $('wd').value = cfg.wd; $('st').value = cfg.sat; }
@@ -799,7 +879,7 @@ button.more:hover{color:var(--tx)}
   function replaceData(raw) {
     raw = raw || {};
     items = clean((Array.isArray(raw.items) ? raw.items : []).concat(Array.isArray(raw.rec) ? raw.rec : [])); bank = cleanBank(raw.bank);
-    var c = cleanCfg(raw.cfg); cfg.sal = c.sal; cfg.hol = c.hol; cfg.desc = c.desc; cfg.wd = c.wd; cfg.sat = c.sat; cfg.c1 = c.c1; cfg.c2 = c.c2; cfg.mode = c.mode;
+    var c = cleanCfg(raw.cfg); cfg.sal = c.sal; cfg.hol = c.hol; cfg.holn = c.holn; cfg.holY = c.holY; cfg.desc = c.desc; cfg.wd = c.wd; cfg.sat = c.sat; cfg.c1 = c.c1; cfg.c2 = c.c2; cfg.mode = c.mode;
     $('wd').value = cfg.wd; $('st').value = cfg.sat;
   }
 
@@ -919,6 +999,106 @@ button.more:hover{color:var(--tx)}
     showCloud(); $('ccard').hidden = !!sess;
     if (sess) reconcile().catch(function (e) { cst = '⚠'; chip(); cmsg('Sin conexión con la nube: ' + e.message); });
   }
+
+
+  // ---------- feriados argentinos automáticos ----------
+  var FERK = 'horas-extras-fer-v1', FER = jget(FERK, {}), ferBusy = {}, ferFail = {};
+  function pedirJson(url) {
+    var ctl = new AbortController(), to = setTimeout(function () { ctl.abort(); }, 12000);
+    return fetch(url, { signal: ctl.signal }).then(function (r) { clearTimeout(to); if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); }, function (e) { clearTimeout(to); throw e; });
+  }
+  // devuelve [{ f: 'AAAA-MM-DD', n: nombre, t: 'c' (cuenta) | 'o' (opcional: puente / no laborable) }]
+  function traerFeriados(y) {
+    return pedirJson('https://api.argentinadatos.com/v1/feriados/' + y).then(function (j) {
+      if (!Array.isArray(j)) throw new Error('formato');
+      return j.filter(function (x) { return x && RE_DATE.test(x.fecha) && x.fecha.slice(0, 4) === String(y); })
+        .map(function (x) { return { f: x.fecha, n: String(x.nombre || 'Feriado').slice(0, 60), t: /puente|no.?laborable/i.test(String(x.tipo || '')) ? 'o' : 'c' }; });
+    }).then(function (l) { if (!l.length) throw new Error('vacío'); return l; }).catch(function () {
+      return pedirJson('https://date.nager.at/api/v3/PublicHolidays/' + y + '/AR').then(function (j) {
+        if (!Array.isArray(j)) throw new Error('formato');
+        return j.filter(function (x) { return x && RE_DATE.test(x.date) && x.date.slice(0, 4) === String(y); })
+          .map(function (x) { return { f: x.date, n: String(x.localName || x.name || 'Feriado').slice(0, 60), t: (x.types && x.types.indexOf('Public') < 0) ? 'o' : 'c' }; });
+      });
+    }).then(function (l) {
+      var vistos = {};
+      l = l.filter(function (x) { if (vistos[x.f]) return false; vistos[x.f] = 1; return true; }).sort(function (p, q) { return p.f < q.f ? -1 : 1; });
+      if (!l.length) throw new Error('vacío'); return l;
+    });
+  }
+  function ferEstado() {
+    var y = selected && selected !== 'todos' ? +selected.slice(0, 4) : new Date().getFullYear();
+    $('ferY').textContent = y;
+    $('ferEst').textContent = ferBusy[y] ? 'Trayendo los feriados de ' + y + '…' : ferFail[y] ? 'No pude traer los feriados de ' + y + ' (sin conexión o servicio caído). Podés cargarlos a mano o reintentar.' : '';
+  }
+  // trae los feriados del año; la primera vez suma los que cuentan (los demás quedan para activar a mano)
+  function cargarAnio(y, forzar) {
+    if (ferBusy[y]) return;
+    if (!forzar && (ferFail[y] || (FER[y] && cfg.holY.indexOf(y) >= 0))) return;
+    ferBusy[y] = 1; delete ferFail[y]; ferEstado();
+    traerFeriados(y).then(function (lista) {
+      FER[y] = lista; try { localStorage.setItem(FERK, JSON.stringify(FER)); } catch (e) {}
+      var primera = cfg.holY.indexOf(y) < 0, nuevos = 0;
+      if (primera || forzar) {
+        lista.forEach(function (x) { if (x.t === 'c') { if (cfg.hol.indexOf(x.f) < 0) { cfg.hol.push(x.f); nuevos++; } if (!cfg.holn[x.f]) cfg.holn[x.f] = x.n; } });
+        cfg.hol.sort();
+        if (primera) { cfg.holY.push(y); cfg.holY.sort(); }
+        save();
+      }
+      delete ferBusy[y]; render();
+      if (forzar) say(nuevos ? 'Se agregaron ' + nuevos + ' feriado(s) de ' + y + '.' : 'Los feriados de ' + y + ' ya estaban al día.', true, 'fermsg');
+    }).catch(function (e) {
+      delete ferBusy[y]; ferFail[y] = e.message || 'error'; render();
+      if (forzar) say('No pude traer los feriados de ' + y + '. Revisá tu conexión o cargalos a mano.', false, 'fermsg');
+    });
+  }
+  // años que hacen falta: el actual, el que estás viendo y los que tienen horas cargadas
+  function asegurarAnios() {
+    var ys = {}; ys[new Date().getFullYear()] = 1;
+    if (selected && selected !== 'todos') ys[+selected.slice(0, 4)] = 1;
+    if (anio) ys[anio] = 1;
+    dataMonths().forEach(function (k) { ys[+k.slice(0, 4)] = 1; });
+    Object.keys(ys).forEach(function (y) { cargarAnio(+y, false); });
+  }
+
+  // ---------- resumen del año ----------
+  var anio = null, lastSY = null, metrica = 'h', MESES = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+  function compacto(n) { try { return new Intl.NumberFormat('es-AR', { notation: 'compact', maximumFractionDigits: 1 }).format(n); } catch (e) { return String(Math.round(n)); } }
+  function renderYear() {
+    if (anio === null) anio = new Date().getFullYear();
+    var cur = today().slice(0, 7), meses = [], tMin = 0, tBru = 0, tNet = 0, sinSueldo = 0, suma = 0, n = 0, conHoras = 0, mejor = null;
+    for (var m = 1; m <= 12; m++) {
+      var ym = anio + '-' + p2(m), c = calc(ym);
+      var v = metrica === 'h' ? c.tot : metrica === 'b' ? (c.gross || 0) : (c.neto || 0);
+      tMin += c.tot; if (c.tot > 0) conHoras++;
+      if (c.gross !== null) { tBru += c.gross; tNet += c.neto; } else if (c.tot > 0) sinSueldo++;
+      if (v > 0) { suma += v; n++; if (!mejor || v > mejor.v) mejor = { ym: ym, v: v }; }
+      meses.push({ ym: ym, m: m, v: v, c: c });
+    }
+    var max = mejor ? mejor.v : 0, fmt = function (x) { return metrica === 'h' ? txt(x) : ARS(x); };
+    $('yTit').textContent = anio;
+    Array.prototype.forEach.call($('yMet').querySelectorAll('button'), function (b) { b.classList.toggle('on', b.dataset.v === metrica); });
+    $('yChart').innerHTML = meses.map(function (o) {
+      var alto = o.v > 0 ? Math.max(5, Math.round(o.v / max * 100)) : 2, esMejor = !!mejor && mejor.ym === o.ym;
+      var tip = monthName(o.ym) + ': ' + txt(o.c.tot) + (o.c.neto !== null ? ' · limpio ' + ARS(o.c.neto) : '');
+      var etiqueta = esMejor ? (metrica === 'h' ? (o.v / 60).toLocaleString('es-AR', { maximumFractionDigits: 1 }) + ' h' : '$' + compacto(o.v)) : '';
+      return '<button type="button" class="yc' + (o.v > 0 ? ' has' : ' zero') + (esMejor ? ' best' : '') + (o.ym === cur ? ' cur' : '') + (selected === o.ym ? ' sel' : '') + '" data-ym="' + o.ym + '" title="' + tip + '" aria-label="' + tip + '">' +
+        '<span class="v">' + (esMejor ? '★ ' : '') + etiqueta + '</span><span class="t"><span class="br" style="height:' + alto + '%"></span></span><span class="m">' + MESES[o.m - 1] + '</span></button>';
+    }).join('');
+    var det = selected !== 'todos' && selected.slice(0, 4) === String(anio) ? selected : (mejor ? mejor.ym : null);
+    if (det) { var d = calc(det); $('yDet').textContent = monthName(det) + ': ' + txt(d.tot) + ' trabajadas' + (d.gross !== null ? ' · bruto ' + ARS(d.gross) + ' · limpio ' + ARS(d.neto) : ' · sin sueldo cargado'); }
+    else $('yDet').textContent = 'Todavía no hay horas cargadas en ' + anio + '.';
+    fillStats($('yStats'), [
+      ['Horas del año', txt(tMin)], ['Bruto del año', tBru ? ARS(tBru) : '—'], ['Limpio del año', tNet ? ARS(tNet) : '—'],
+      ['Mejor mes' + (mejor ? ' · ' + monthName(mejor.ym).split(' de ')[0] : ''), mejor ? fmt(mejor.v) : '—'],
+      ['Promedio por mes', n ? fmt(suma / n) : '—'], ['Meses con extras', String(conHoras)]
+    ]);
+    $('yHint').textContent = sinSueldo && metrica !== 'h' ? 'Faltan sueldos en ' + sinSueldo + ' mes(es) con horas: sus montos no se suman.' : '';
+    $('sbY').textContent = tMin ? anio + ' · ' + txt(tMin) : String(anio);
+  }
+  $('yPrev').onclick = function () { anio--; renderYear(); asegurarAnios(); };
+  $('yNext').onclick = function () { anio++; renderYear(); asegurarAnios(); };
+  $('yMet').onclick = function (e) { var b = e.target.closest('button'); if (!b) return; metrica = b.dataset.v; renderYear(); };
+  $('yChart').onclick = function (e) { var b = e.target.closest('.yc'); if (!b) return; selected = b.dataset.ym; render(); };
 
   // ---------- secciones plegables (se recuerda cuáles dejaste abiertas) ----------
   var UI = 'horas-extras-ui-v1';
